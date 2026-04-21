@@ -1,32 +1,26 @@
-name: Semgrep
-
 on:
+  workflow_dispatch: {}
+  pull_request: {}
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-permissions:
-  contents: read
-  security-events: write
-
+    branches:
+    - main
+    - master
+    paths:
+    - .github/workflows/semgrep.yml
+  schedule:
+  # random HH:MM to avoid a load spike on GitHub Actions at 00:00
+  - cron: 57 13 * * *
+name: Semgrep
 jobs:
   semgrep:
+    name: semgrep/ci
     runs-on: ubuntu-latest
-    name: Semgrep scan
+    permissions:
+      contents: read
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+    container:
+      image: semgrep/semgrep
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Semgrep
-        run: |
-          pip install semgrep
-          semgrep --config=p/owasp-top-ten --config=p/security-audit \
-            --sarif --output=semgrep.sarif . || true
-
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
-        with:
-          sarif_file: semgrep.sarif
-          category: semgrep
+    - uses: actions/checkout@v4
+    - run: semgrep ci
