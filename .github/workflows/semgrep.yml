@@ -22,7 +22,7 @@ jobs:
         run: |
           pip install semgrep
           semgrep --config=p/owasp-top-ten --config=p/security-audit \
-            --json --output=semgrep.sarif . || true
+            --sarif --output=semgrep.sarif . || true
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v4
